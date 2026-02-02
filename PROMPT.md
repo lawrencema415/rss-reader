@@ -6,13 +6,10 @@ Requirements:
 - The project should be based on React using Javascript.
 - Show story headlines in a list
 - by clicking on a story headline, all the content for that story provided by the RSS
-
-feed should be rendered in the web app in a separate page.
+ feed should be rendered in the web app in a separate page.
 - Bookmark a story with a UI representing the bookmarked state.
 - Persist bookmark state across sessions using your preferred methods
-- Given how annoying XML is, feel free to Google search and use a library that converts
-
-the RSS xml format to JSON.
+- Given how annoying XML is, feel free to Google search and use a library that converts the RSS xml format to JSON.
 - Don’t use any CSS libraries (eg. Bootstrap, Material UI)
 - Be able to view multiple feeds
 - Should be responsive on mobile/tablet
