@@ -1,8 +1,23 @@
-import { Clock, User, ArrowRight, Loader2, AlertCircle, Inbox, RefreshCw, Bookmark, BookmarkPlus } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { 
+  Clock, 
+  User, 
+  ExternalLink, 
+  Loader2, 
+  AlertCircle, 
+  Inbox, 
+  RefreshCw, 
+  Bookmark, 
+  BookmarkPlus,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react';
 
 /**
  * @typedef {import('@/types/rss').RSSItem} RSSItem
  */
+
+const ITEMS_PER_PAGE = 6;
 
 /**
  * @param {Object} props
@@ -25,6 +40,13 @@ const StoryList = ({
   error,
   onRetry
 }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset pagination when feed changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [stories.length, feedName]);
+
   function formatDate(dateString) {
     if (!dateString) return '';
     try {
@@ -115,31 +137,65 @@ const StoryList = ({
     );
   }
 
+  const totalPages = Math.ceil(stories.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const currentStories = stories.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5; // How many numbers to show before starting to use ellipsis
+
+    if (totalPages <= maxVisible + 2) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      // Always show first page
+      pages.push(1);
+
+      // Show neighbors and everything between 1 and currentPage
+      const start = 2;
+      const end = Math.min(totalPages - 1, currentPage + 1);
+
+      for (let i = start; i <= end; i++) {
+        if (!pages.includes(i)) pages.push(i);
+      }
+
+      if (currentPage < totalPages - 2) {
+        pages.push('...');
+      }
+
+      // Always show last page
+      if (!pages.includes(totalPages)) {
+        pages.push(totalPages);
+      }
+    }
+    return pages;
+  };
+
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm shadow-gray-100/50 overflow-hidden">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm shadow-gray-100/50 overflow-hidden flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-gray-50/50 to-white">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50/50 to-white leading-tight">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">{feedName}</h2>
-          <p className="text-sm text-gray-500 mt-0.5">{stories.length} stories</p>
+          <h2 className="text-lg font-bold text-gray-900">{feedName}</h2>
+          <p className="text-xs text-gray-500 mt-0.5">{stories.length} stories</p>
         </div>
       </div>
 
       {/* Stories */}
-      <div className="divide-y divide-gray-50">
-        {stories.map((story, index) => {
+      <div className="divide-y divide-gray-50 flex-1">
+        {currentStories.map((story, index) => {
           const bookmarked = isBookmarked(story.guid || '');
           return (
             <article 
               key={story.guid || index} 
-              className="group p-5 hover:bg-orange-50/30 transition-all duration-200 cursor-pointer animate-fade-in"
+              className="group p-4 hover:bg-orange-50/30 transition-all duration-200 cursor-pointer animate-fade-in"
               style={{ animationDelay: `${index * 50}ms` }}
               onClick={() => onSelectStory(story)}
             >
               <div className="flex items-start gap-4">
                 {/* Thumbnail */}
                 {story.thumbnail && (
-                  <div className="shrink-0 w-24 h-24 sm:w-32 sm:h-24 rounded-xl overflow-hidden bg-gray-100 border border-gray-100">
+                  <div className="shrink-0 w-20 h-20 sm:w-24 sm:h-20 rounded-xl overflow-hidden bg-gray-100 border border-gray-100">
                     <img 
                       src={story.thumbnail} 
                       alt="" 
@@ -151,60 +207,119 @@ const StoryList = ({
 
                 <div className="flex-1 min-w-0">
                   {/* Title */}
-                  <h3 className="text-base font-semibold text-gray-900 mb-2 leading-snug group-hover:text-[#F04E23] transition-colors line-clamp-2">
+                  <h3 className="text-[15px] font-semibold text-gray-900 mb-1 leading-snug group-hover:text-[#F04E23] transition-colors line-clamp-1">
                     {story.title}
                   </h3>
                   
                   {/* Description */}
-                  <p className="text-sm text-gray-600 leading-relaxed mb-3 line-clamp-2">
-                    {truncateText(story.description, 180)}
+                  <p className="text-sm text-gray-500 leading-relaxed mb-2 line-clamp-1">
+                    {truncateText(story.description, 150)}
                   </p>
                   
                   {/* Meta */}
-                  <div className="flex items-center gap-4 text-xs text-gray-500">
+                  <div className="flex items-center gap-4 text-[11px] text-gray-400">
                     {story.author && (
                       <span className="flex items-center gap-1.5">
-                        <User className="w-3.5 h-3.5" />
+                        <User className="w-3 h-3" />
                         {story.author}
                       </span>
                     )}
                     <span className="flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5" />
+                      <Clock className="w-3 h-3" />
                       {formatDate(story.pubDate)}
                     </span>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-col items-end gap-2 shrink-0">
+                <div className="flex flex-col items-end gap-1.5 shrink-0">
                   <button
-                    className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all duration-200 ${
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200 ${
                       bookmarked 
                         ? 'text-[#F04E23] bg-orange-100' 
-                        : 'text-gray-400 hover:text-[#F04E23] hover:bg-orange-50'
+                        : 'text-gray-400 hover:text-[#F04E23] hover:bg-orange-100'
                     }`}
                     onClick={(e) => {
                       e.stopPropagation();
                       onToggleBookmark(story);
                     }}
+                    title={bookmarked ? 'Remove bookmark' : 'Add bookmark'}
                     aria-label={bookmarked ? 'Remove bookmark' : 'Add bookmark'}
                   >
                     {bookmarked ? (
-                      <BookmarkPlus className="w-5 h-5" />
+                      <BookmarkPlus className="w-4 h-4" />
                     ) : (
-                      <Bookmark className="w-5 h-5" />
+                      <Bookmark className="w-4 h-4" />
                     )}
                   </button>
                   
-                  <div className="w-9 h-9 flex items-center justify-center rounded-lg bg-gray-100 text-gray-400 group-hover:bg-[#F04E23] group-hover:text-white transition-all duration-200">
-                    <ArrowRight className="w-4 h-4" />
-                  </div>
+                  <a
+                    href={story.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Open external link"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-400 hover:bg-[#F04E23] hover:text-white transition-all duration-200"
+                    onClick={(e) => e.stopPropagation()}
+                    aria-label="Open external link"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
                 </div>
               </div>
             </article>
           );
         })}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between">
+          <p className="text-xs text-gray-400">
+            Page <span className="font-semibold text-gray-600">{currentPage}</span> of <span className="font-semibold text-gray-600">{totalPages}</span>
+          </p>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="p-1.5 rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              aria-label="Previous page"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            {/* Page numbers - visible only on tablet and up */}
+            <div className="hidden md:flex items-center gap-1 mx-1">
+              {getPageNumbers().map((page, i) => {
+                if (page === '...') {
+                  return <span key={`ellipsis-${i}`} className="text-[10px] text-gray-400 px-0.5">...</span>;
+                }
+                return (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`min-w-[32px] h-8 rounded-lg text-xs font-medium transition-all ${
+                      currentPage === page
+                        ? 'bg-[#F04E23] text-white shadow-sm'
+                        : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-50'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="p-1.5 rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              aria-label="Next page"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

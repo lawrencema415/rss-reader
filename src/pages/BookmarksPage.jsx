@@ -35,8 +35,6 @@ const BookmarksPage = () => {
               feeds={allFeeds}
               selectedFeedId="bookmarks"
               onSelectFeed={(id) => navigate(`/feed/${id}`)}
-              onViewBookmarks={() => navigate('/bookmarks')}
-              bookmarkCount={bookmarks.length}
               onAddFeed={handleAddFeed}
               onEditFeed={handleEditFeed}
               onDeleteFeed={handleDeleteFeed}

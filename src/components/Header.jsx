@@ -30,7 +30,7 @@ const Header = ({ showBookmarks = true, bookmarkCount = 0, currentPath = '' }) =
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">FeedReader</h1>
+            <h1 className="text-xl font-bold text-gray-900">RSS Reader</h1>
             <p className="hidden sm:block text-xs text-gray-500 -mt-0.5">Stay informed</p>
           </div>
         </div>

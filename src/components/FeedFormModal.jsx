@@ -44,7 +44,7 @@ const FeedFormModal = ({ isOpen, onClose, onSave, feed = null }) => {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
           <label htmlFor="name" className="text-sm font-semibold text-gray-700 ml-1">
-            Feed Name
+            Source Name
           </label>
           <input
             id="name"
@@ -59,7 +59,7 @@ const FeedFormModal = ({ isOpen, onClose, onSave, feed = null }) => {
 
         <div className="space-y-1.5">
           <label htmlFor="url" className="text-sm font-semibold text-gray-700 ml-1">
-            Feed URL
+            RSS Feed URL
           </label>
           <input
             id="url"
