@@ -45,9 +45,16 @@ const FeedSelector = ({
             </button>
           )}
           {/* Chevron - only visible on small/medium screens */}
-          <div className="lg:hidden p-1 text-gray-400 group-hover/header:text-[#F04E23] transition-colors">
+          <button 
+            className="lg:hidden p-1 text-gray-400 hover:text-[#F04E23] transition-colors focus:outline-none"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsExpanded(!isExpanded);
+            }}
+            aria-label={isExpanded ? "Collapse feeds" : "Expand feeds"}
+          >
             {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </div>
+          </button>
         </div>
       </div>
       

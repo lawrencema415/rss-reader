@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
+import { formatRelativeDate, truncateText, getPageNumbers } from '../utils/formatters';
 
 /**
  * @typedef {import('@/types/rss').RSSItem} RSSItem
@@ -47,35 +48,11 @@ const StoryList = ({
     setCurrentPage(1);
   }, [stories.length, feedName]);
 
-  function formatDate(dateString) {
-    if (!dateString) return '';
-    try {
-      const date = new Date(dateString);
-      const now = new Date();
-      const diffMs = now.getTime() - date.getTime();
-      const diffMins = Math.floor(diffMs / 60000);
-      const diffHours = Math.floor(diffMs / 3600000);
-      const diffDays = Math.floor(diffMs / 86400000);
+  const totalPages = Math.ceil(stories.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const currentStories = stories.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-      if (diffMins < 1) return 'Just now';
-      if (diffMins < 60) return `${diffMins}m ago`;
-      if (diffHours < 24) return `${diffHours}h ago`;
-      if (diffDays < 7) return `${diffDays}d ago`;
-      
-      return date.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric',
-        year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
-      });
-    } catch {
-      return dateString;
-    }
-  }
-
-  function truncateText(text, maxLength) {
-    if (!text || text.length <= maxLength) return text || '';
-    return text.substring(0, maxLength).trim() + '...';
-  }
+  const pageNumbers = getPageNumbers(currentPage, totalPages);
 
   if (isLoading) {
     return (
@@ -137,39 +114,6 @@ const StoryList = ({
     );
   }
 
-  const totalPages = Math.ceil(stories.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const currentStories = stories.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
-  const getPageNumbers = () => {
-    const pages = [];
-    const maxVisible = 5; // How many numbers to show before starting to use ellipsis
-
-    if (totalPages <= maxVisible + 2) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else {
-      // Always show first page
-      pages.push(1);
-
-      // Show neighbors and everything between 1 and currentPage
-      const start = 2;
-      const end = Math.min(totalPages - 1, currentPage + 1);
-
-      for (let i = start; i <= end; i++) {
-        if (!pages.includes(i)) pages.push(i);
-      }
-
-      if (currentPage < totalPages - 2) {
-        pages.push('...');
-      }
-
-      // Always show last page
-      if (!pages.includes(totalPages)) {
-        pages.push(totalPages);
-      }
-    }
-    return pages;
-  };
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm shadow-gray-100/50 overflow-hidden flex flex-col">
@@ -226,7 +170,7 @@ const StoryList = ({
                     )}
                     <span className="flex items-center gap-1.5">
                       <Clock className="w-3 h-3" />
-                      {formatDate(story.pubDate)}
+                      {formatRelativeDate(story.pubDate)}
                     </span>
                   </div>
                 </div>
@@ -289,7 +233,7 @@ const StoryList = ({
 
             {/* Page numbers - visible only on tablet and up */}
             <div className="hidden md:flex items-center gap-1 mx-1">
-              {getPageNumbers().map((page, i) => {
+              {pageNumbers.map((page, i) => {
                 if (page === '...') {
                   return <span key={`ellipsis-${i}`} className="text-[10px] text-gray-400 px-0.5">...</span>;
                 }

@@ -1,27 +1,10 @@
 import { Clock, User, Trash2, Inbox, ExternalLink, Bookmark, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import ConfirmModal from './ConfirmModal';
+import { formatSimpleDate, formatRelativeDate, truncateText, getPageNumbers } from '../utils/formatters';
 
 const ITEMS_PER_PAGE = 5;
 
-function formatDate(dateString) {
-  if (!dateString) return '';
-  try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric'
-    });
-  } catch {
-    return dateString;
-  }
-}
-
-function truncateText(text, maxLength) {
-  if (!text || text.length <= maxLength) return text || '';
-  return text.substring(0, maxLength).trim() + '...';
-}
 
 const BookmarkList = ({ 
   bookmarks, 
@@ -66,27 +49,8 @@ const BookmarkList = ({
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const currentBookmarks = bookmarks.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-  const getPageNumbers = () => {
-    const pages = [];
-    const maxVisible = 5;
+  const pageNumbers = getPageNumbers(currentPage, totalPages);
 
-    if (totalPages <= maxVisible + 2) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else {
-      pages.push(1);
-      
-      const start = 2;
-      const end = Math.min(totalPages - 1, currentPage + 1);
-
-      for (let i = start; i <= end; i++) {
-        if (!pages.includes(i)) pages.push(i);
-      }
-
-      if (currentPage < totalPages - 2) pages.push('...');
-      if (!pages.includes(totalPages)) pages.push(totalPages);
-    }
-    return pages;
-  };
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm shadow-gray-100/50 overflow-hidden flex flex-col">
@@ -157,7 +121,7 @@ const BookmarkList = ({
                   </span>
                   <span className="text-[10px] text-gray-400 flex items-center gap-1">
                     <Clock className="w-2.5 h-2.5" />
-                    Saved {formatDate(story.bookmarkedAt)}
+                    Saved {formatSimpleDate(story.bookmarkedAt)}
                   </span>
                 </div>
                 
@@ -181,7 +145,7 @@ const BookmarkList = ({
                   )}
                   <span className="flex items-center gap-1.5">
                     <Clock className="w-3 h-3" />
-                    {formatDate(story.pubDate)}
+                    {formatRelativeDate(story.pubDate)}
                   </span>
                 </div>
               </div>
@@ -235,7 +199,7 @@ const BookmarkList = ({
 
             {/* Page numbers - visible only on tablet and up */}
             <div className="hidden md:flex items-center gap-1 mx-1">
-              {getPageNumbers().map((page, i) => {
+              {pageNumbers.map((page, i) => {
                 if (page === '...') {
                   return <span key={`ellipsis-${i}`} className="text-[10px] text-gray-400 px-0.5">...</span>;
                 }

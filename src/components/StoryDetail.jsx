@@ -1,22 +1,7 @@
 import { ArrowLeft, Bookmark, ExternalLink, Clock, User, Facebook, Twitter, Mail, Share2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import { formatFullDate } from '../utils/formatters';
 
-function formatDate(dateString) {
-  if (!dateString) return '';
-  try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  } catch {
-    return dateString;
-  }
-}
 
 const StoryDetail = ({ 
   story, 
@@ -37,7 +22,7 @@ const StoryDetail = ({
       if (!isHovering) {
         timeoutRef.current = setTimeout(() => {
           setIsVisible(false);
-        }, 1500); // 1.5s for a slightly more natural feel, but responsive to your 1s request
+        }, 1500);
       }
     };
 
@@ -98,15 +83,6 @@ const StoryDetail = ({
               <span className="hidden sm:inline">{isBookmarked ? 'Saved' : 'Save'}</span>
             </button>
             
-            <a
-              href={`mailto:?subject=${encodeURIComponent(story.title)}&body=${encodeURIComponent(story.link)}`}
-              className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-200"
-              title="Share via Email"
-            >
-              <Mail className="w-4 h-4" />
-              <span className="hidden sm:inline">Email</span>
-            </a>
-            
             <a 
               href={story.link} 
               target="_blank" 
@@ -147,7 +123,7 @@ const StoryDetail = ({
           )}
           <span className="flex items-center gap-2">
             <Clock className="w-4 h-4" />
-            {formatDate(story.pubDate)}
+            {formatFullDate(story.pubDate)}
           </span>
         </div>
         
