@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-
-const BOOKMARKS_KEY = 'rss_reader_bookmarks';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useAuth } from '@/context/AuthContext';
 
 /**
  * @typedef {import('@/types/rss').BookmarkedStory} BookmarkedStory
@@ -8,40 +7,59 @@ const BOOKMARKS_KEY = 'rss_reader_bookmarks';
  */
 
 export function useBookmarks() {
+  const { user, signInWithGoogle } = useAuth();
   const [bookmarks, setBookmarks] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load bookmarks from localStorage on mount
+  // Generate key based on user ID or guest status
+  const bookmarksKey = useMemo(() => {
+    const suffix = user ? user.id : 'guest';
+    return `rss_reader_bookmarks_${suffix}`;
+  }, [user]);
+
+  // Load bookmarks whenever the key changes (user log in/out)
   useEffect(() => {
+    setIsLoaded(false);
     try {
-      const stored = localStorage.getItem(BOOKMARKS_KEY);
+      const stored = localStorage.getItem(bookmarksKey);
       if (stored) {
         const parsed = JSON.parse(stored);
         setBookmarks(Array.isArray(parsed) ? parsed : []);
+      } else {
+        setBookmarks([]);
       }
     } catch (error) {
       console.error('Failed to load bookmarks:', error);
       setBookmarks([]);
     }
     setIsLoaded(true);
-  }, []);
+  }, [bookmarksKey]);
 
-  // Save bookmarks to localStorage whenever they change
+  // Save bookmarks whenever they change
   useEffect(() => {
     if (isLoaded) {
       try {
-        localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(bookmarks));
+        localStorage.setItem(bookmarksKey, JSON.stringify(bookmarks));
       } catch (error) {
         console.error('Failed to save bookmarks:', error);
       }
     }
-  }, [bookmarks, isLoaded]);
+  }, [bookmarks, isLoaded, bookmarksKey]);
 
   const isBookmarked = useCallback((guid) => {
     return bookmarks.some(b => b.guid === guid);
   }, [bookmarks]);
 
   const addBookmark = useCallback((item, feedId, feedName) => {
+    // Notify guest users to login
+    if (!user) {
+      const wantToLogin = window.confirm("You are not logged in. Your bookmarks will only be saved locally on this browser. Would you like to sign in with Google to sync bookmarks later?");
+      if (wantToLogin) {
+        signInWithGoogle();
+        return;
+      }
+    }
+
     setBookmarks(prev => {
       if (prev.some(b => b.guid === item.guid)) return prev;
       const newBookmark = {
@@ -52,7 +70,7 @@ export function useBookmarks() {
       };
       return [newBookmark, ...prev];
     });
-  }, []);
+  }, [user, signInWithGoogle]);
 
   const removeBookmark = useCallback((guid) => {
     setBookmarks(prev => prev.filter(b => b.guid !== guid));
@@ -80,3 +98,4 @@ export function useBookmarks() {
     clearAllBookmarks,
   };
 }
+
