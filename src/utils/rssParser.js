@@ -18,26 +18,53 @@ const parser = new XMLParser({
  * @returns {Promise<RSSFeed>}
  */
 export async function fetchAndParseRSS(url) {
-  // Use a CORS proxy to fetch RSS feeds
-  // Alternative proxies: 
-  // - 'https://corsproxy.io/?'
-  // - 'https://api.allorigins.win/raw?url='
-  const corsProxy = 'https://corsproxy.io/?';
-  const response = await fetch(corsProxy + encodeURIComponent(url));
+  const proxies = [
+    (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+    (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+    (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+  ];
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch RSS feed: ${response.statusText}`);
+  let xmlText = null;
+  let lastError = null;
+
+  for (const proxy of proxies) {
+    try {
+      const response = await fetch(proxy(url));
+      if (response.ok) {
+        xmlText = await response.text();
+        break;
+      } else {
+        lastError = new Error(`Proxy error: ${response.statusText}`);
+      }
+    } catch (error) {
+      lastError = error;
+    }
   }
 
-  const xmlText = await response.text();
-  const parsed = parser.parse(xmlText);
+  if (!xmlText) {
+    throw new Error(`Failed to fetch RSS feed after trying multiple proxies. Last error: ${lastError?.message}`);
+  }
+
+  // Check if response is actually HTML (common with strict firewalls/proxies)
+  if (xmlText.trim().toLowerCase().startsWith('<!doctype html') || 
+      xmlText.trim().toLowerCase().startsWith('<html')) {
+    throw new Error('Feed URL returned a webpage instead of an RSS feed (likely blocked by CORS/Firewall).');
+  }
+
+  let parsed;
+  try {
+    parsed = parser.parse(xmlText);
+  } catch (error) {
+    console.error('XML Parsing Error:', error);
+    throw new Error('Failed to parse RSS feed content. The feed might be malformed.');
+  }
 
   // Handle different RSS formats
   const rss = parsed.rss || parsed.feed;
   const channel = rss?.channel || rss;
 
   if (!channel) {
-    throw new Error('Invalid RSS feed format');
+    throw new Error('Invalid RSS feed format: Missing channel/feed element');
   }
 
   const items = channel.item || channel.entry || [];
@@ -45,7 +72,8 @@ export async function fetchAndParseRSS(url) {
 
   const parsedItems = itemArray.map((item) => {
     // Handle content that might be in different fields
-    const content = item['content:encoded'] || item.content || item.description || '';
+    const rawContent = item['content:encoded'] || item.content || item.description || '';
+    const contentStr = typeof rawContent === 'string' ? rawContent : extractText(rawContent);
 
     return {
       title: extractText(item.title) || 'Untitled',
@@ -53,7 +81,9 @@ export async function fetchAndParseRSS(url) {
       description: cleanHtml(extractText(item.description) || ''),
       pubDate: extractText(item.pubDate) || extractText(item.published) || extractText(item.updated) || '',
       author: extractText(item.author?.name) || extractText(item['dc:creator']) || extractText(item.creator) || '',
-      content: typeof content === 'string' ? content : extractText(content),
+      content: contentStr,
+      thumbnail: extractFirstImage(contentStr) || extractFirstImage(item['media:content']?.['@_url'] || ''),
+      feedName: extractText(channel.title) || 'Unknown Feed', // Useful for context
       guid: extractText(item.guid) || extractText(item.id) || extractLink(item) || '',
     };
   });
@@ -89,4 +119,13 @@ function cleanHtml(html) {
   if (typeof html !== 'string') return '';
   // Remove HTML tags for preview text
   return html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+}
+
+function extractFirstImage(html) {
+  if (typeof html !== 'string') return '';
+  // Match <img ... src="URL" ... > or just simple URL if passed directly
+  if (html.startsWith('http')) return html;
+  
+  const imgMatch = html.match(/<img[^>]+src=["']([^"']+)["'][^>]*>/i);
+  return imgMatch ? imgMatch[1] : '';
 }

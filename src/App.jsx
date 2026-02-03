@@ -1,6 +1,7 @@
 import './App.css';
 import { useState, useEffect, useCallback } from 'react';
-import { Rss, BookOpen } from 'lucide-react';
+import { Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
+import { BookOpen } from 'lucide-react';
 
 import FeedSelector from '@/components/FeedSelector';
 import StoryList from '@/components/StoryList';
@@ -16,11 +17,9 @@ const FEED_SOURCES = [
 ];
 
 function App() {
-  const [selectedFeedId, setSelectedFeedId] = useState(FEED_SOURCES[0].id);
   const [feedData, setFeedData] = useState({});
   const [isLoading, setIsLoading] = useState({});
   const [errors, setErrors] = useState({});
-  const [viewState, setViewState] = useState(/** @type {{ type: string, story?: any, feedName?: string }} */ ({ type: 'list' }));
   
   const { 
     bookmarks, 
@@ -31,90 +30,37 @@ function App() {
     clearAllBookmarks 
   } = useBookmarks();
 
-  useEffect(() => {
-    const fetchFeed = async (feedId) => {
-      // Don't fetch if we already have data, are currently loading, or have an error
-      if (feedData[feedId] || isLoading[feedId] || errors[feedId]) return;
-      
-      const feedSource = FEED_SOURCES.find(f => f.id === feedId);
-      if (!feedSource) return;
-
-      setIsLoading(prev => ({ ...prev, [feedId]: true }));
-      setErrors(prev => ({ ...prev, [feedId]: '' }));
-
-      try {
-        const data = await fetchAndParseRSS(feedSource.url);
-        setFeedData(prev => ({ ...prev, [feedId]: data }));
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Failed to load feed';
-        setErrors(prev => ({ ...prev, [feedId]: errorMessage }));
-      } finally {
-        setIsLoading(prev => ({ ...prev, [feedId]: false }));
-      }
-    };
-
-    if (selectedFeedId !== 'bookmarks') {
-      fetchFeed(selectedFeedId);
-    }
-    // Only re-run when selectedFeedId changes
-  }, [selectedFeedId, feedData, isLoading, errors]);
-
-  const handleSelectFeed = useCallback((feedId) => {
-    setSelectedFeedId(feedId);
-    setViewState({ type: 'list' });
-  }, []);
-
-  const handleViewBookmarks = useCallback(() => {
-    setSelectedFeedId('bookmarks');
-    setViewState({ type: 'bookmarks' });
-  }, []);
-
-  const handleSelectStory = useCallback((story) => {
-    const feedName = selectedFeedId === 'bookmarks' 
-      ? story.feedName 
-      : FEED_SOURCES.find(f => f.id === selectedFeedId)?.name || 'Unknown';
-    setViewState({ type: 'detail', story, feedName });
-  }, [selectedFeedId]);
-
-  const handleBack = useCallback(() => {
-    if (selectedFeedId === 'bookmarks') {
-      setViewState({ type: 'bookmarks' });
-    } else {
-      setViewState({ type: 'list' });
-    }
-  }, [selectedFeedId]);
-
-  const handleToggleBookmark = useCallback((story) => {
-    const feedName = selectedFeedId === 'bookmarks' 
-      ? story.feedName 
-      : FEED_SOURCES.find(f => f.id === selectedFeedId)?.name || 'Unknown';
-    toggleBookmark(story, selectedFeedId === 'bookmarks' ? story.feedId : selectedFeedId, feedName);
-  }, [selectedFeedId, toggleBookmark]);
-
-  const handleRetryFeed = useCallback((feedId) => {
-    // Clear the error and refetch
-    setErrors(prev => ({ ...prev, [feedId]: '' }));
+  const fetchFeed = useCallback(async (feedId) => {
+    // Prevent fetching if we already have data, are loading, OR have a persistent error
+    // To retry, the error must be cleared first (which handleRetryFeed does)
+    if (feedData[feedId] || isLoading[feedId] || errors[feedId]) return;
     
     const feedSource = FEED_SOURCES.find(f => f.id === feedId);
     if (!feedSource) return;
 
     setIsLoading(prev => ({ ...prev, [feedId]: true }));
+    // We don't clear error here because if we are here, errors[feedId] must be falsy
+    
+    try {
+      const data = await fetchAndParseRSS(feedSource.url);
+      setFeedData(prev => ({ ...prev, [feedId]: data }));
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load feed';
+      setErrors(prev => ({ ...prev, [feedId]: errorMessage }));
+    } finally {
+      setIsLoading(prev => ({ ...prev, [feedId]: false }));
+    }
+  }, [feedData, isLoading, errors]);
 
-    fetchAndParseRSS(feedSource.url)
-      .then(data => {
-        setFeedData(prev => ({ ...prev, [feedId]: data }));
-      })
-      .catch(error => {
-        const errorMessage = error instanceof Error ? error.message : 'Failed to load feed';
-        setErrors(prev => ({ ...prev, [feedId]: errorMessage }));
-      })
-      .finally(() => {
-        setIsLoading(prev => ({ ...prev, [feedId]: false }));
-      });
+  const handleRetryFeed = useCallback((feedId) => {
+    setFeedData(prev => {
+      const newState = { ...prev };
+      delete newState[feedId];
+      return newState;
+    });
+    setErrors(prev => ({ ...prev, [feedId]: '' }));
+    // fetchFeed will be triggered by the effect in FeedRoute
   }, []);
-
-  const currentFeed = feedData[selectedFeedId];
-  const currentFeedName = FEED_SOURCES.find(f => f.id === selectedFeedId)?.name || 'Bookmarks';
 
   if (!bookmarksLoaded) {
     return (
@@ -129,93 +75,204 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50/50 via-white to-gray-50/50">
-      {/* Header */}
+      <Routes>
+        <Route path="/" element={<Navigate to={`/feed/${FEED_SOURCES[0].id}`} replace />} />
+        <Route path="/feed/:feedId" element={
+          <FeedRoute 
+            feeds={FEED_SOURCES} 
+            feedData={feedData} 
+            isLoading={isLoading} 
+            errors={errors} 
+            fetchFeed={fetchFeed} 
+            bookmarks={bookmarks}
+            isBookmarked={isBookmarked}
+            toggleBookmark={toggleBookmark}
+            onRetry={handleRetryFeed}
+          />
+        } />
+        <Route path="/bookmarks" element={
+          <BookmarksRoute 
+            feeds={FEED_SOURCES} 
+            bookmarks={bookmarks}
+            removeBookmark={removeBookmark}
+            clearAllBookmarks={clearAllBookmarks}
+          />
+        } />
+        <Route path="/read/:slug" element={
+          <StoryRoute 
+            isBookmarked={isBookmarked}
+            toggleBookmark={toggleBookmark}
+          />
+        } />
+      </Routes>
+    </div>
+  );
+}
+
+const Header = ({ title = "FeedReader", showBookmarks = true, bookmarkCount = 0, currentPath = '' }) => {
+  const navigate = useNavigate();
+  return (
       <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
             <div>
               <h1 className="text-xl font-bold text-gray-900">FeedReader</h1>
               <p className="hidden sm:block text-xs text-gray-500 -mt-0.5">Stay informed</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={handleViewBookmarks}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                selectedFeedId === 'bookmarks'
-                  ? 'bg-[#F04E23] text-white shadow-lg shadow-orange-200'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              <BookOpen className="w-4 h-4" />
-              <span className="hidden sm:inline">Bookmarks</span>
-              {bookmarks.length > 0 && (
-                <span className={`text-xs px-2 py-0.5 rounded-full ${
-                  selectedFeedId === 'bookmarks' ? 'bg-white/20' : 'bg-[#F04E23] text-white'
-                }`}>
-                  {bookmarks.length}
-                </span>
-              )}
-            </button>
-          </div>
+          {showBookmarks && (
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => navigate('/bookmarks')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                  currentPath === '/bookmarks'
+                    ? 'bg-[#F04E23] text-white shadow-lg shadow-orange-200'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <BookOpen className="w-4 h-4" />
+                <span className="hidden sm:inline">Bookmarks</span>
+                {bookmarkCount > 0 && (
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    currentPath === '/bookmarks' ? 'bg-white/20' : 'bg-[#F04E23] text-white'
+                  }`}>
+                    {bookmarkCount}
+                  </span>
+                )}
+              </button>
+            </div>
+          )}
         </div>
       </header>
+  );
+};
 
-      {/* Main Content */}
+const FeedRoute = ({ feeds, feedData, isLoading, errors, fetchFeed, bookmarks, isBookmarked, toggleBookmark, onRetry }) => {
+  const { feedId } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (feedId) {
+      fetchFeed(feedId);
+    }
+  }, [feedId, fetchFeed]);
+
+  const currentFeed = feedData[feedId];
+  const feedSource = feeds.find(f => f.id === feedId);
+  const feedName = feedSource?.name || 'Unknown Feed';
+
+  const handleSelectStory = (story) => {
+    // Create a slug for the URL
+    const slug = encodeURIComponent(story.title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+    navigate(`/read/${slug}`, { state: { story, feedName, feedId } });
+  };
+
+  return (
+    <>
+      <Header bookmarkCount={bookmarks.length} currentPath={location.pathname} />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-      {viewState.type === 'detail' ? (
-        <div className="max-w-5xl mx-auto">
-          <StoryDetail
-            story={viewState.story}
-            feedName={viewState.feedName}
-            isBookmarked={isBookmarked(viewState.story.guid || '')}
-            onToggleBookmark={() => handleToggleBookmark(viewState.story)}
-            onBack={handleBack}
-          />
-        </div>
-      ) : (
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* Sidebar */}
           <aside className="w-full lg:w-64 shrink-0">
             <FeedSelector
-              feeds={FEED_SOURCES}
-              selectedFeedId={selectedFeedId}
-              onSelectFeed={handleSelectFeed}
-              onViewBookmarks={handleViewBookmarks}
+              feeds={feeds}
+              selectedFeedId={feedId}
+              onSelectFeed={(id) => navigate(`/feed/${id}`)}
+              onViewBookmarks={() => navigate('/bookmarks')}
               bookmarkCount={bookmarks.length}
             />
           </aside>
-
-          {/* Content Area */}
           <section className="flex-1 min-w-0">
-            {viewState.type === 'list' && (
-              <StoryList
-                stories={currentFeed?.items || []}
-                feedName={currentFeedName}
-                onSelectStory={handleSelectStory}
-                isBookmarked={isBookmarked}
-                onToggleBookmark={handleToggleBookmark}
-                isLoading={isLoading[selectedFeedId]}
-                error={errors[selectedFeedId]}
-                onRetry={() => handleRetryFeed(selectedFeedId)}
-              />
-            )}
+            <StoryList
+              stories={currentFeed?.items || []}
+              feedName={feedName}
+              onSelectStory={handleSelectStory}
+              isBookmarked={isBookmarked}
+              onToggleBookmark={(story) => toggleBookmark(story, feedId, feedName)}
+              isLoading={isLoading[feedId]}
+              error={errors[feedId]}
+              onRetry={() => onRetry(feedId)}
+            />
+          </section>
+        </div>
+      </main>
+    </>
+  );
+};
 
-            {viewState.type === 'bookmarks' && (
-              <BookmarkList
+const BookmarksRoute = ({ feeds, bookmarks, removeBookmark, clearAllBookmarks }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleSelectStory = (story) => {
+    const slug = encodeURIComponent(story.title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+    navigate(`/read/${slug}`, { state: { story, feedName: story.feedName, feedId: story.feedId } });
+  };
+
+  return (
+    <>
+      <Header bookmarkCount={bookmarks.length} currentPath={location.pathname} />
+       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <div className="flex flex-col lg:flex-row gap-6">
+          <aside className="w-full lg:w-64 shrink-0">
+            <FeedSelector
+              feeds={feeds}
+              selectedFeedId="bookmarks"
+              onSelectFeed={(id) => navigate(`/feed/${id}`)}
+              onViewBookmarks={() => navigate('/bookmarks')}
+              bookmarkCount={bookmarks.length}
+            />
+          </aside>
+          <section className="flex-1 min-w-0">
+             <BookmarkList
                 bookmarks={bookmarks}
                 onSelectStory={handleSelectStory}
                 onRemoveBookmark={removeBookmark}
                 onClearAll={clearAllBookmarks}
               />
-            )}
           </section>
         </div>
-      )}
       </main>
-    </div>
+    </>
   );
-}
+};
+
+const StoryRoute = ({ isBookmarked, toggleBookmark }) => {
+  const { state } = useLocation();
+  const navigate = useNavigate();
+
+  if (!state?.story) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Story not found</h2>
+        <p className="text-gray-500 mb-6">The story context was lost (likely due to a refresh).</p>
+        <button 
+          onClick={() => navigate('/')}
+          className="px-6 py-2 bg-[#F04E23] text-white rounded-xl font-medium hover:bg-[#D9441F] transition-colors"
+        >
+          Return Home
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <Header showBookmarks={false} />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+         <div className="max-w-5xl mx-auto">
+          <StoryDetail
+            story={state.story}
+            feedName={state.feedName}
+            isBookmarked={isBookmarked(state.story.guid || '')}
+            onToggleBookmark={() => toggleBookmark(state.story, state.feedId, state.feedName)}
+            onBack={() => navigate(-1)}
+          />
+        </div>
+      </main>
+    </>
+  );
+};
 
 export default App;

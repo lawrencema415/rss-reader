@@ -9,6 +9,7 @@
  * @property {string} [author]
  * @property {string} [content]
  * @property {string} [guid]
+ * @property {string} [thumbnail]
  */
 
 /**

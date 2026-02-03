@@ -137,6 +137,18 @@ const StoryList = ({
               onClick={() => onSelectStory(story)}
             >
               <div className="flex items-start gap-4">
+                {/* Thumbnail */}
+                {story.thumbnail && (
+                  <div className="shrink-0 w-24 h-24 sm:w-32 sm:h-24 rounded-xl overflow-hidden bg-gray-100 border border-gray-100">
+                    <img 
+                      src={story.thumbnail} 
+                      alt="" 
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+
                 <div className="flex-1 min-w-0">
                   {/* Title */}
                   <h3 className="text-base font-semibold text-gray-900 mb-2 leading-snug group-hover:text-[#F04E23] transition-colors line-clamp-2">

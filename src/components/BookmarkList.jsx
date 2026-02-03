@@ -101,6 +101,21 @@ const BookmarkList = ({
             style={{ animationDelay: `${index * 50}ms` }}
           >
             <div className="flex items-start gap-4">
+              {/* Thumbnail */}
+              {story.thumbnail && (
+                <div 
+                  className="shrink-0 w-24 h-24 sm:w-32 sm:h-24 rounded-xl overflow-hidden bg-gray-100 border border-gray-100"
+                  onClick={() => onSelectStory(story)}
+                >
+                  <img 
+                    src={story.thumbnail} 
+                    alt="" 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                </div>
+              )}
+
               <div 
                 className="flex-1 min-w-0"
                 onClick={() => onSelectStory(story)}
