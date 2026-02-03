@@ -2,7 +2,7 @@ import { Clock, User, Trash2, Inbox, ExternalLink, Bookmark, ChevronLeft, Chevro
 import { useState, useEffect } from 'react';
 import ConfirmModal from './ConfirmModal';
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 5;
 
 function formatDate(dateString) {
   if (!dateString) return '';
@@ -242,7 +242,7 @@ const BookmarkList = ({
                 return (
                   <button
                     key={page}
-                    onClick={() => setCurrentPage(page)}
+                    onClick={() => typeof page === 'number' && setCurrentPage(page)}
                     className={`min-w-[32px] h-8 rounded-lg text-xs font-medium transition-all ${
                       currentPage === page
                         ? 'bg-[#F04E23] text-white shadow-sm'

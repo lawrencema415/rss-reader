@@ -43,6 +43,18 @@ export function useFeeds() {
   const saveUserFeed = async ({ name, url, id }) => {
     if (!user) return;
 
+    // Check if URL already exists in either DEFAULT_FEEDS or userFeeds
+    // If editing (id exists), skip the check for the current feed's own URL
+    const normalizedUrl = url.trim().toLowerCase();
+    const isDuplicate = allFeeds.some(f => 
+      f.url.trim().toLowerCase() === normalizedUrl && 
+      (!id || f.id.toString() !== id.toString())
+    );
+
+    if (isDuplicate) {
+      throw new Error('DUPLICATE_URL');
+    }
+
     if (id) {
       try {
         const { error } = await supabase

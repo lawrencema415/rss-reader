@@ -37,6 +37,7 @@ const Header = ({ showBookmarks = true, bookmarkCount = 0, currentPath = '' }) =
         
         <div className="flex items-center gap-3">
           {showBookmarks && (
+            <>
             <button 
               onClick={() => navigate('/bookmarks')}
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
@@ -55,9 +56,10 @@ const Header = ({ showBookmarks = true, bookmarkCount = 0, currentPath = '' }) =
                 </span>
               )}
             </button>
+            <div className="h-6 w-px bg-gray-200 mx-1 hidden sm:block" />
+            </>
           )}
 
-          <div className="h-6 w-px bg-gray-200 mx-1 hidden sm:block" />
 
           {user ? (
             <div className="relative" ref={menuRef}>

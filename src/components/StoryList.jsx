@@ -176,7 +176,7 @@ const StoryList = ({
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50/50 to-white leading-tight">
         <div>
-          <h2 className="text-lg font-bold text-gray-900">{feedName}</h2>
+          <h2 className="text-lg font-bold text-[#F04E23]">{feedName}</h2>
           <p className="text-xs text-gray-500 mt-0.5">{stories.length} stories</p>
         </div>
       </div>
@@ -198,7 +198,7 @@ const StoryList = ({
                   <div className="shrink-0 w-20 h-20 sm:w-24 sm:h-20 rounded-xl overflow-hidden bg-gray-100 border border-gray-100">
                     <img 
                       src={story.thumbnail} 
-                      alt="" 
+                      alt="thumbnail image"
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       loading="lazy"
                     />
@@ -296,7 +296,7 @@ const StoryList = ({
                 return (
                   <button
                     key={page}
-                    onClick={() => setCurrentPage(page)}
+                    onClick={() => typeof page === 'number' && setCurrentPage(page)}
                     className={`min-w-[32px] h-8 rounded-lg text-xs font-medium transition-all ${
                       currentPage === page
                         ? 'bg-[#F04E23] text-white shadow-sm'

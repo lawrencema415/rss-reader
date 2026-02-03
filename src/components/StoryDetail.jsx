@@ -1,5 +1,5 @@
-import { ArrowLeft, Bookmark, ExternalLink, Clock, User, Share2 } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowLeft, Bookmark, ExternalLink, Clock, User, Facebook, Twitter, Mail, Share2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 
 function formatDate(dateString) {
   if (!dateString) return '';
@@ -26,65 +26,96 @@ const StoryDetail = ({
   onBack 
 }) => {
   const content = story.content || story.description || '';
-  const [showCopied, setShowCopied] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [isHovering, setIsHovering] = useState(false);
+  const timeoutRef = useRef(null);
 
-  const handleShare = async () => {
-    try {
-      await navigator.clipboard.writeText(story.link);
-      setShowCopied(true);
-      setTimeout(() => setShowCopied(false), 2000);
-    } catch {
-      // Silently fail
-    }
-  };
-  
+  // Auto-hide logic
+  useEffect(() => {
+    const resetTimer = () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (!isHovering) {
+        timeoutRef.current = setTimeout(() => {
+          setIsVisible(false);
+        }, 1500); // 1.5s for a slightly more natural feel, but responsive to your 1s request
+      }
+    };
+
+    const handleMouseMove = (e) => {
+      // Show if moving mouse UP (movementY is negative)
+      // Or if mouse is near the top of the browser (within 100px)
+      if (e.movementY < 0 || e.clientY < 100) {
+        setIsVisible(true);
+        resetTimer();
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    resetTimer(); // Start initial timer
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [isHovering]);
+
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm shadow-gray-100/50 overflow-hidden animate-fade-in">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm shadow-gray-100/50 animate-fade-in relative">
       {/* Header */}
-      <div className="sticky top-16 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-4 sm:px-6 py-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+      <div 
+        className={`sticky top-16 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-3 sm:px-6 py-3 sm:py-4 transition-all duration-500 ease-in-out ${
+          isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'
+        }`}
+        onMouseEnter={() => {
+          setIsHovering(true);
+          setIsVisible(true);
+        }}
+        onMouseLeave={() => {
+          setIsHovering(false);
+        }}
+      >
+        <div className="flex items-center justify-between gap-2">
           <button 
-            className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#F04E23] bg-gray-100 hover:bg-orange-50 px-4 py-2.5 rounded-xl transition-all duration-200 w-fit"
+            className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#F04E23] bg-gray-100 hover:bg-orange-50 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition-all duration-200"
             onClick={onBack}
+            title="Go back"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back
+            <span className="hidden sm:inline">Back</span>
           </button>
           
-          <div className="flex items-center gap-2 sm:ml-auto">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <button
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                 isBookmarked
                   ? 'bg-[#F04E23] text-white shadow-lg shadow-orange-200'
                   : 'bg-gray-100 text-gray-700 hover:bg-orange-50 hover:text-[#F04E23]'
               }`}
               onClick={onToggleBookmark}
+              title={isBookmarked ? 'Remove bookmark' : 'Save bookmark'}
             >
               <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} />
-              {isBookmarked ? 'Saved' : 'Save'}
+              <span className="hidden sm:inline">{isBookmarked ? 'Saved' : 'Save'}</span>
             </button>
             
-            <button
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-200 relative"
-              onClick={handleShare}
+            <a
+              href={`mailto:?subject=${encodeURIComponent(story.title)}&body=${encodeURIComponent(story.link)}`}
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-200"
+              title="Share via Email"
             >
-              <Share2 className="w-4 h-4" />
-              Share
-              {showCopied && (
-                <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                  Copied!
-                </span>
-              )}
-            </button>
+              <Mail className="w-4 h-4" />
+              <span className="hidden sm:inline">Email</span>
+            </a>
             
             <a 
               href={story.link} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-[#F04E23] to-[#D9441F] text-white hover:shadow-lg hover:shadow-orange-200 transition-all duration-200"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-[#F04E23] to-[#D9441F] text-white hover:shadow-lg hover:shadow-orange-200 transition-all duration-200"
+              title="View original article"
             >
               <ExternalLink className="w-4 h-4" />
-              Original
+              <span className="hidden sm:inline">Original</span>
             </a>
           </div>
         </div>
@@ -122,9 +153,44 @@ const StoryDetail = ({
         
         {/* Body */}
         <div 
-          className="story-body"
+          className="story-body mb-12"
           dangerouslySetInnerHTML={{ __html: content }}
         />
+
+        {/* Social Sharing Section */}
+        <div className="pt-8 border-t border-gray-100">
+          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-6 flex items-center gap-2">
+            <Share2 className="w-4 h-4 text-[#F04E23]" />
+            Share this story
+          </h3>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(story.link)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#1877F2] text-white rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-blue-200 transition-all duration-200 active:scale-95"
+            >
+              <Facebook className="w-4 h-4" />
+              Facebook
+            </a>
+            <a
+              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(story.link)}&text=${encodeURIComponent(story.title)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#1DA1F2] text-white rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-sky-200 transition-all duration-200 active:scale-95"
+            >
+              <Twitter className="w-4 h-4" />
+              Tweet
+            </a>
+            <a
+              href={`mailto:?subject=${encodeURIComponent(story.title)}&body=${encodeURIComponent(story.link)}`}
+              className="flex items-center gap-2 px-5 py-2.5 bg-gray-800 text-white rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-gray-200 transition-all duration-200 active:scale-95"
+            >
+              <Mail className="w-4 h-4" />
+              Email
+            </a>
+          </div>
+        </div>
       </article>
     </div>
   );

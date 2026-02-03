@@ -1,11 +1,15 @@
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useMatch, useNavigate } from 'react-router-dom';
 import FeedFormModal from '@/components/FeedFormModal';
 import ConfirmModal from '@/components/ConfirmModal';
 import { useFeeds } from '@/hooks/useFeeds';
 import { useBookmarks } from '@/hooks/useBookmarks';
 
 const RootLayout = () => {
+  const navigate = useNavigate();
+  const match = useMatch('/feed/:feedId');
+  const currentFeedId = match?.params?.feedId;
+
   const { 
     allFeeds, 
     feedData, 
@@ -47,7 +51,14 @@ const RootLayout = () => {
 
   const onConfirmDelete = async () => {
     if (deletingFeed) {
-      await deleteUserFeed(deletingFeed.id);
+      const idToDelete = deletingFeed.id;
+      await deleteUserFeed(idToDelete);
+      
+      // If the user is currently viewing the feed being deleted, redirect home
+      if (currentFeedId && currentFeedId.toString() === idToDelete.toString()) {
+        navigate('/');
+      }
+      
       setDeletingFeed(null);
     }
   };

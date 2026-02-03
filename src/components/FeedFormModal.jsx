@@ -5,6 +5,7 @@ import Modal from './Modal';
 const FeedFormModal = ({ isOpen, onClose, onSave, feed = null }) => {
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
+  const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isEditing = !!feed;
@@ -17,19 +18,25 @@ const FeedFormModal = ({ isOpen, onClose, onSave, feed = null }) => {
       setName('');
       setUrl('');
     }
+    setError('');
   }, [feed, isOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name || !url) return;
+    setError('');
 
     setIsSubmitting(true);
     try {
       await onSave({ name, url, id: feed?.id });
       onClose();
-    } catch (error) {
-      console.error('Failed to save feed:', error);
-      alert('Failed to save feed. Please check the URL and try again.');
+    } catch (err) {
+      console.error('Failed to save feed:', err);
+      if (err instanceof Error && err.message === 'DUPLICATE_URL') {
+        setError('This RSS feed has already been added.');
+      } else {
+        setError('Failed to save feed. Please check the URL and try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -51,7 +58,10 @@ const FeedFormModal = ({ isOpen, onClose, onSave, feed = null }) => {
             type="text"
             placeholder="e.g. The Verge"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+              setError('');
+            }}
             required
             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-gray-400"
           />
@@ -64,12 +74,24 @@ const FeedFormModal = ({ isOpen, onClose, onSave, feed = null }) => {
           <input
             id="url"
             type="url"
-            placeholder="e.g. https://www.theverge.com/rss/full.xml"
+            placeholder="https://www.theverge.com/rss/full.xml"
             value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            onChange={(e) => {
+              setUrl(e.target.value);
+              setError('');
+            }}
             required
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-gray-400"
+            className={`w-full px-4 py-3 rounded-xl border transition-all placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 ${
+              error 
+                ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' 
+                : 'border-gray-200 focus:border-orange-500 focus:ring-orange-500/20'
+            }`}
           />
+          {error && (
+            <p className="text-xs font-medium text-red-500 ml-1 animate-fade-in">
+              {error}
+            </p>
+          )}
         </div>
 
         <div className="pt-2">
