@@ -5,7 +5,6 @@ import { useAuth } from '@/context/AuthContext';
  * @typedef {import('@/types/rss').BookmarkedStory} BookmarkedStory
  * @typedef {import('@/types/rss').RSSItem} RSSItem
  */
-
 export function useBookmarks() {
   const { user, signInWithGoogle } = useAuth();
   const [bookmarks, setBookmarks] = useState([]);
@@ -98,4 +97,3 @@ export function useBookmarks() {
     clearAllBookmarks,
   };
 }
-

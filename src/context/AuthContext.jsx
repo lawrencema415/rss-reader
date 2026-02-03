@@ -17,15 +17,22 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Initial session check
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      setLoading(false);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('AuthProvider: Initial session found:', !!session);
+        setUser(session?.user ?? null);
+      } catch (e) {
+        console.error('AuthProvider: session check failed', e);
+      } finally {
+        setLoading(false);
+      }
     };
     
     checkSession();
 
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('AuthProvider: Auth state change event:', event, !!session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
