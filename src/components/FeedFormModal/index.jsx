@@ -53,6 +53,8 @@ const FeedFormModal = ({
       isOpen={isOpen} 
       onClose={onClose} 
       title={isEditing ? 'Edit Feed' : 'Add New Feed'}
+      closeOnClickOutside={false}
+      closeOnEscape={false}
     >
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         <fieldset disabled={isSubmitting} className="space-y-4">

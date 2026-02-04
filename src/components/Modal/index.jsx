@@ -3,6 +3,8 @@ import { X } from 'lucide-react';
 
 const Modal = ({ 
   children, 
+  closeOnClickOutside = true,
+  closeOnEscape = true,
   footer = null, 
   hideCloseButton = false, 
   isOpen, 
@@ -42,21 +44,27 @@ const Modal = ({
   // Handle Escape key
   useEffect(() => {
     const handleEscape = (e) => {
-      if (e.key === 'Escape' && isOpen && !hideCloseButton) {
+      if (e.key === 'Escape' && isOpen && !hideCloseButton && closeOnEscape) {
         onClose();
       }
     };
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, onClose, hideCloseButton]);
+  }, [isOpen, onClose, hideCloseButton, closeOnEscape]);
 
   if (!isOpen) return null;
+
+  const handleBackdropClick = (e) => {
+    if (closeOnClickOutside) {
+      onClose();
+    }
+  };
 
   return (
     <div 
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" 
-      onClick={onClose}
+      onClick={handleBackdropClick}
       role="presentation"
     >
       <div 

@@ -67,8 +67,6 @@ describe('BookmarkList Component', () => {
   it('calls onSelectStory when clicking a story', () => {
     render(<BookmarkList {...defaultProps} />);
     fireEvent.click(screen.getByText('Story 1'));
-    // Depending on markup, might need to click container.
-    // However, text is inside the container with onClick.
     expect(defaultProps.onSelectStory).toHaveBeenCalledWith(mockBookmarks[0]);
   });
 

@@ -88,7 +88,7 @@ const StoryDetail = ({
               href={story.link} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-[#F04E23] to-[#D9441F] text-white hover:shadow-lg hover:shadow-orange-200 transition-all duration-200"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900 transition-all duration-200 border border-gray-200"
               title="View original article"
             >
               <ExternalLink className="w-4 h-4" />

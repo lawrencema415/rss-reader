@@ -59,22 +59,37 @@ export function useFeeds() {
 
     if (id) {
       try {
+        console.log('Attempting to update feed:', { id, name, url });
         const { error } = await supabase
           .from('user_feeds')
           .update({ name, url })
-          .eq('id', id);
+          .eq('id', id)
+          .eq('user_id', user.id);
 
-        if (error) throw error;
-        setUserFeeds(prev => prev.map(f => f.id === id ? { ...f, name, url } : f));
+        if (error) {
+          console.error('Supabase update error:', error);
+          throw error;
+        }
         
-        // Clear cached data if URL changed
+        // Update local state immediately on success
+        setUserFeeds(prev => {
+          const updated = prev.map(f => (f.id == id) ? { ...f, name, url } : f);
+          console.log('State updated. Before:', prev.length, 'After updated match:', updated.some(f => f.id == id));
+          return updated;
+        });
+        
+        // Clear cached data for this feed so it reloads with new URL/name
         setFeedData(prev => {
           const newState = { ...prev };
-          delete newState[id];
+          Object.keys(newState).forEach(key => {
+            if (key == id) delete newState[key];
+          });
           return newState;
         });
+        
+        console.log('Feed update successful');
       } catch (error) {
-        console.error('Error updating feed:', error);
+        console.error('Error in saveUserFeed (update):', error);
         throw error;
       }
     } else {
@@ -104,10 +119,11 @@ export function useFeeds() {
 
       if (error) throw error;
       
-      setUserFeeds(prev => prev.filter(f => f.id !== feedId));
+      setUserFeeds(prev => prev.filter(f => f.id != feedId));
       setFeedData(prev => {
         const newState = { ...prev };
-        delete newState[feedId];
+        const keyToClear = Object.keys(newState).find(k => k == feedId);
+        if (keyToClear) delete newState[keyToClear];
         return newState;
       });
     } catch (error) {
