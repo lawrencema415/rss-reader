@@ -42,6 +42,9 @@ function App() {
   const [deletingFeed, setDeletingFeed] = useState(null);
   const [editingFeed, setEditingFeed] = useState(null);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
+
+  const { signInWithGoogle } = useAuth();
 
   const handleAddFeed = useCallback(() => {
     setEditingFeed(null);
@@ -64,6 +67,14 @@ function App() {
     }
   }, [deletingFeed, deleteUserFeed]);
 
+  const handleToggleBookmark = useCallback((story, feedId, feedName) => {
+    if (!user) {
+      setIsLoginPromptOpen(true);
+      return;
+    }
+    toggleBookmark(story, feedId, feedName);
+  }, [user, toggleBookmark]);
+
   const sharedProps = {
     addBookmark,
     allFeeds,
@@ -80,7 +91,7 @@ function App() {
     isLoading,
     removeBookmark,
     retryFeed,
-    toggleBookmark,
+    toggleBookmark: handleToggleBookmark,
     user
   };
 
@@ -88,11 +99,14 @@ function App() {
     deletingFeed,
     editingFeed,
     isFormModalOpen,
+    isLoginPromptOpen,
     onConfirmDelete,
+    onConfirmLogin: signInWithGoogle,
     saveUserFeed,
     setDeletingFeed,
     setEditingFeed,
-    setIsFormModalOpen
+    setIsFormModalOpen,
+    setIsLoginPromptOpen
   };
 
 

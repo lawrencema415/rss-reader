@@ -6,11 +6,14 @@ const RootLayout = ({
   deletingFeed, 
   editingFeed, 
   isFormModalOpen, 
+  isLoginPromptOpen,
   onConfirmDelete, 
+  onConfirmLogin,
   saveUserFeed, 
   setDeletingFeed, 
   setEditingFeed, 
-  setIsFormModalOpen 
+  setIsFormModalOpen,
+  setIsLoginPromptOpen
 }) => {
 
   return (
@@ -31,6 +34,20 @@ const RootLayout = ({
         title="Delete Feed"
         hideCloseButton={true}
         message={`Are you sure you want to delete "${deletingFeed?.name}"?`}
+      />
+
+      <ConfirmModal
+        isOpen={isLoginPromptOpen}
+        onClose={() => setIsLoginPromptOpen(false)}
+        onConfirm={() => {
+          setIsLoginPromptOpen(false);
+          onConfirmLogin();
+        }}
+        hideCloseButton={true}
+        title="Sign In Required"
+        confirmText="Sign in with Google"
+        isDestructive={false}
+        message="You need to be signed in to bookmark stories and sync them across devices."
       />
     </div>
   );

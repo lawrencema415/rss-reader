@@ -48,14 +48,7 @@ export function useBookmarks() {
   }, [bookmarks]);
 
   const addBookmark = useCallback((item, feedId, feedName) => {
-    // Notify guest users to login
-    if (!user) {
-      const wantToLogin = window.confirm("You are not logged in. Your bookmarks will only be saved locally on this browser. Would you like to sign in with Google to sync bookmarks later?");
-      if (wantToLogin) {
-        signInWithGoogle();
-        return;
-      }
-    }
+    if (!user) return;
 
     setBookmarks(prev => {
       if (prev.some(b => b.guid === item.guid)) return prev;
