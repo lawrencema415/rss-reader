@@ -1,10 +1,8 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
 import { useAuth } from '@/context/AuthContext';
 
-/**
- * @typedef {import('@/types/rss').BookmarkedStory} BookmarkedStory
- * @typedef {import('@/types/rss').RSSItem} RSSItem
- */
+
 export function useBookmarks() {
   const { user, signInWithGoogle } = useAuth();
   const [bookmarks, setBookmarks] = useState([]);
@@ -88,12 +86,13 @@ export function useBookmarks() {
   }, []);
 
   return {
-    bookmarks,
-    isLoaded,
-    isBookmarked,
     addBookmark,
+    bookmarks,
+    clearAllBookmarks,
+    isBookmarked,
+    isLoaded,
     removeBookmark,
     toggleBookmark,
-    clearAllBookmarks,
   };
+
 }

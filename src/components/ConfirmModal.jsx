@@ -1,7 +1,18 @@
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
+
 import Modal from './Modal';
 
-const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message, confirmText = 'Delete', isDestructive = true, hideCloseButton = false }) => {
+const ConfirmModal = ({ 
+  confirmText = 'Delete', 
+  hideCloseButton = false, 
+  isDestructive = true, 
+  isOpen, 
+  message, 
+  onClose, 
+  onConfirm, 
+  title 
+}) => {
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} hideCloseButton={hideCloseButton}>
       <div className="flex flex-col items-center text-center space-y-4">

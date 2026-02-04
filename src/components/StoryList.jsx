@@ -1,46 +1,21 @@
-import { useState, useEffect } from 'react';
-import { 
-  Clock, 
-  User, 
-  ExternalLink, 
-  Loader2, 
-  AlertCircle, 
-  Inbox, 
-  RefreshCw, 
-  Bookmark, 
-  BookmarkPlus,
-  ChevronLeft,
-  ChevronRight
-} from 'lucide-react';
-import { formatRelativeDate, truncateText, getPageNumbers } from '../utils/formatters';
+import { useEffect, useState } from 'react';
+import { AlertCircle, Bookmark, BookmarkPlus, ChevronLeft, ChevronRight, Clock, ExternalLink, Inbox, Loader2, RefreshCw, User } from 'lucide-react';
 
-/**
- * @typedef {import('@/types/rss').RSSItem} RSSItem
- */
+import { formatRelativeDate, getPageNumbers, truncateText } from '../utils/formatters';
 
 const ITEMS_PER_PAGE = 6;
 
-/**
- * @param {Object} props
- * @param {RSSItem[]} props.stories
- * @param {string} props.feedName
- * @param {function(RSSItem): void} props.onSelectStory
- * @param {function(string): boolean} props.isBookmarked
- * @param {function(RSSItem): void} props.onToggleBookmark
- * @param {boolean} [props.isLoading]
- * @param {string|null} [props.error]
- * @param {function(): void} [props.onRetry]
- */
 const StoryList = ({ 
-  stories, 
+  error, 
   feedName, 
-  onSelectStory, 
   isBookmarked, 
-  onToggleBookmark,
-  isLoading,
-  error,
-  onRetry
+  isLoading, 
+  onRetry, 
+  onSelectStory, 
+  onToggleBookmark, 
+  stories 
 }) => {
+
   const [currentPage, setCurrentPage] = useState(1);
 
   // Reset pagination when feed changes

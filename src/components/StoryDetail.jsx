@@ -1,15 +1,16 @@
-import { ArrowLeft, Bookmark, ExternalLink, Clock, User, Facebook, Twitter, Mail, Share2 } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { ArrowLeft, Bookmark, Clock, ExternalLink, Facebook, Mail, Share2, Twitter, User } from 'lucide-react';
+
 import { formatFullDate } from '../utils/formatters';
 
-
 const StoryDetail = ({ 
-  story, 
   feedName, 
   isBookmarked, 
+  onBack, 
   onToggleBookmark, 
-  onBack 
+  story 
 }) => {
+
   const content = story.content || story.description || '';
   const [isVisible, setIsVisible] = useState(true);
   const [isHovering, setIsHovering] = useState(false);

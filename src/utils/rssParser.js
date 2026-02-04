@@ -1,9 +1,5 @@
 import { XMLParser } from 'fast-xml-parser';
 
-/**
- * @typedef {import('@/types/rss').RSSFeed} RSSFeed
- * @typedef {import('@/types/rss').RSSItem} RSSItem
- */
 
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -15,7 +11,6 @@ const parser = new XMLParser({
 
 /**
  * @param {string} url
- * @returns {Promise<RSSFeed>}
  */
 export async function fetchAndParseRSS(url) {
   const proxies = [

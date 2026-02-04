@@ -1,19 +1,17 @@
 import { useState } from 'react';
-import { Rss, Newspaper, Plus, Settings2, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Newspaper, Plus, Rss, Settings2, Trash2 } from 'lucide-react';
 
 const FeedSelector = ({ 
   feeds, 
-  selectedFeedId, 
+  onAddFeed, 
+  onDeleteFeed, 
+  onEditFeed, 
   onSelectFeed, 
-  onAddFeed,
-  onEditFeed,
-  onDeleteFeed,
-  user
+  selectedFeedId, 
+  user 
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
 
-  // Get current feed name for collapsed title
-  const currentFeed = feeds.find(f => f.id.toString() === selectedFeedId?.toString());
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm shadow-gray-100/50 sticky lg:top-22 z-30 max-h-[815px] flex flex-col overflow-hidden transition-all duration-300">

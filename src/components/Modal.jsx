@@ -1,7 +1,15 @@
-import { X } from 'lucide-react';
 import { useEffect } from 'react';
+import { X } from 'lucide-react';
 
-const Modal = ({ isOpen, onClose, title, children, footer = null, hideCloseButton = false }) => {
+const Modal = ({ 
+  children, 
+  footer = null, 
+  hideCloseButton = false, 
+  isOpen, 
+  onClose, 
+  title 
+}) => {
+
   // Prevent scrolling when modal is open
   useEffect(() => {
     if (isOpen) {

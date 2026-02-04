@@ -1,25 +1,23 @@
-import { useNavigate, useLocation, useOutletContext } from 'react-router-dom';
-import Header from '@/components/Header';
-import FeedSelector from '@/components/FeedSelector';
-import BookmarkList from '@/components/BookmarkList';
-import { useAuth } from '@/context/AuthContext';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-const BookmarksPage = () => {
+import BookmarkList from '@/components/BookmarkList';
+import FeedSelector from '@/components/FeedSelector';
+import Header from '@/components/Header';
+
+const BookmarksPage = ({ 
+  allFeeds, 
+  bookmarks, 
+  clearAllBookmarks,
+  handleAddFeed, 
+  handleDeleteFeed, 
+  handleEditFeed, 
+  removeBookmark, 
+  user 
+}) => {
+
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
   
-  /** @type {import('@/types/rss').LayoutContext} */
-  const { 
-    allFeeds, 
-    bookmarks, 
-    removeBookmark, 
-    clearAllBookmarks,
-    handleAddFeed, 
-    handleEditFeed, 
-    handleDeleteFeed 
-  } = useOutletContext();
-
   const handleSelectStory = (story) => {
     const slug = encodeURIComponent(story.title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-'));
     navigate(`/read/${slug}`, { state: { story, feedName: story.feedName, feedId: story.feedId } });

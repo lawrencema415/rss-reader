@@ -1,12 +1,15 @@
-import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+
 import Header from '@/components/Header';
 import StoryDetail from '@/components/StoryDetail';
 
-const StoryPage = () => {
+const StoryPage = ({ 
+  isBookmarked, 
+  toggleBookmark 
+}) => {
+
   const { state } = useLocation();
   const navigate = useNavigate();
-  /** @type {import('@/types/rss').LayoutContext} */
-  const { isBookmarked, toggleBookmark } = useOutletContext();
 
   if (!state?.story) {
     return (

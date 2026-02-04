@@ -1,9 +1,15 @@
-import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
 import { BookOpen, LogOut, User as UserIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
 import { useAuth } from '@/context/AuthContext';
 
-const Header = ({ showBookmarks = true, bookmarkCount = 0, currentPath = '' }) => {
+const Header = ({ 
+  bookmarkCount = 0, 
+  currentPath = '', 
+  showBookmarks = true 
+}) => {
+
   const navigate = useNavigate();
   const { user, signInWithGoogle, signOut } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);

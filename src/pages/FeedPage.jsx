@@ -1,33 +1,31 @@
 import { useEffect } from 'react';
-import { useParams, useNavigate, useLocation, useOutletContext } from 'react-router-dom';
-import Header from '@/components/Header';
-import FeedSelector from '@/components/FeedSelector';
-import StoryList from '@/components/StoryList';
-import { useAuth } from '@/context/AuthContext';
 
-const FeedPage = () => {
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+
+import FeedSelector from '@/components/FeedSelector';
+import Header from '@/components/Header';
+import StoryList from '@/components/StoryList';
+
+const FeedPage = ({ 
+  allFeeds, 
+  bookmarks, 
+  errors, 
+  feedData, 
+  fetchFeedData, 
+  handleAddFeed, 
+  handleDeleteFeed, 
+  handleEditFeed, 
+  isBookmarked, 
+  isLoading, 
+  retryFeed, 
+  toggleBookmark, 
+  user 
+}) => {
+
   const { feedId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
   
-  // Get data and handle modal handlers from RootLayout via useOutletContext
-  /** @type {import('@/types/rss').LayoutContext} */
-  const { 
-    allFeeds, 
-    feedData, 
-    isLoading, 
-    errors, 
-    fetchFeedData, 
-    retryFeed,
-    handleAddFeed, 
-    handleEditFeed, 
-    handleDeleteFeed,
-    bookmarks,
-    isBookmarked,
-    toggleBookmark
-  } = useOutletContext();
-
   useEffect(() => {
     if (feedId) {
       fetchFeedData(feedId);

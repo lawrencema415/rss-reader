@@ -1,8 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
-import { fetchAndParseRSS } from '@/utils/rssParser';
+import { useCallback, useEffect, useState } from 'react';
+
 import { DEFAULT_FEEDS } from '@/constants/feeds';
 import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/lib/supabase';
+import { fetchAndParseRSS } from '@/utils/rssParser';
+
 
 export function useFeeds() {
   const { user } = useAuth();
@@ -144,12 +146,13 @@ export function useFeeds() {
 
   return {
     allFeeds,
-    feedData,
-    isLoading,
-    errors,
-    saveUserFeed,
     deleteUserFeed,
+    errors,
+    feedData,
     fetchFeedData,
-    retryFeed
+    isLoading,
+    retryFeed,
+    saveUserFeed
   };
+
 }

@@ -1,17 +1,18 @@
-import { Clock, User, Trash2, Inbox, ExternalLink, Bookmark, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Bookmark, ChevronLeft, ChevronRight, Clock, ExternalLink, Inbox, Trash2, User } from 'lucide-react';
+
 import ConfirmModal from './ConfirmModal';
-import { formatSimpleDate, formatRelativeDate, truncateText, getPageNumbers } from '../utils/formatters';
+import { formatRelativeDate, formatSimpleDate, getPageNumbers, truncateText } from '../utils/formatters';
 
 const ITEMS_PER_PAGE = 5;
 
-
 const BookmarkList = ({ 
   bookmarks, 
-  onSelectStory, 
+  onClearAll,
   onRemoveBookmark,
-  onClearAll 
+  onSelectStory
 }) => {
+
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 

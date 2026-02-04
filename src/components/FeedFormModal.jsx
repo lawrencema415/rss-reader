@@ -1,8 +1,15 @@
-import { useState, useEffect } from 'react';
-import { Plus, Save, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Loader2, Plus, Save } from 'lucide-react';
+
 import Modal from './Modal';
 
-const FeedFormModal = ({ isOpen, onClose, onSave, feed = null }) => {
+const FeedFormModal = ({ 
+  feed = null, 
+  isOpen, 
+  onClose, 
+  onSave 
+}) => {
+
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
