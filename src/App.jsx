@@ -1,5 +1,4 @@
 import { useCallback, useState } from 'react';
-
 import { Loader2 } from 'lucide-react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
@@ -8,9 +7,9 @@ import { useAuth } from '@/context/AuthContext';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { useFeeds } from '@/hooks/useFeeds';
 import RootLayout from '@/layouts/RootLayout';
-import BookmarksPage from '@/pages/BookmarksPage';
-import FeedPage from '@/pages/FeedPage';
-import StoryPage from '@/pages/StoryPage';
+import Bookmarks from '@/pages/Bookmarks';
+import Feed from '@/pages/Feed';
+import Story from '@/pages/Story';
 
 import './App.css';
 
@@ -115,15 +114,15 @@ function App() {
           />
           <Route 
             path="feed/:feedId" 
-            element={<FeedPage {...sharedProps} />} 
+            element={<Feed {...sharedProps} />} 
           />
           <Route 
             path="bookmarks" 
-            element={<BookmarksPage {...sharedProps} />} 
+            element={<Bookmarks {...sharedProps} />} 
           />
           <Route 
             path="read/:slug" 
-            element={<StoryPage {...sharedProps} />} 
+            element={<Story {...sharedProps} />} 
           />
         </Routes>
       </RootLayout>

@@ -4,7 +4,7 @@ import BookmarkList from '@/components/BookmarkList';
 import FeedSelector from '@/components/FeedSelector';
 import Header from '@/components/Header';
 
-const BookmarksPage = ({ 
+const Bookmarks = ({ 
   allFeeds, 
   bookmarks, 
   clearAllBookmarks,
@@ -53,4 +53,4 @@ const BookmarksPage = ({
   );
 };
 
-export default BookmarksPage;
+export default Bookmarks;

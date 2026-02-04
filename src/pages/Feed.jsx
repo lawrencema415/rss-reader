@@ -6,7 +6,7 @@ import FeedSelector from '@/components/FeedSelector';
 import Header from '@/components/Header';
 import StoryList from '@/components/StoryList';
 
-const FeedPage = ({ 
+const Feed = ({ 
   allFeeds, 
   bookmarks, 
   errors, 
@@ -75,4 +75,4 @@ const FeedPage = ({
   );
 };
 
-export default FeedPage;
+export default Feed;

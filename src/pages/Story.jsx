@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import StoryDetail from '@/components/StoryDetail';
 
-const StoryPage = ({ 
+const Story = ({ 
   isBookmarked, 
   toggleBookmark 
 }) => {
@@ -44,4 +44,4 @@ const StoryPage = ({
   );
 };
 
-export default StoryPage;
+export default Story;
