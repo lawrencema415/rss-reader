@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Bookmark, ChevronLeft, ChevronRight, Clock, ExternalLink, Inbox, Trash2, User } from 'lucide-react';
 
-import ConfirmModal from './ConfirmModal';
-import { formatRelativeDate, formatSimpleDate, getPageNumbers, truncateText } from '../utils/formatters';
+import ConfirmModal from '../ConfirmModal';
+import { formatRelativeDate, formatSimpleDate, getPageNumbers, truncateText } from '../../utils/formatters';
 
 const ITEMS_PER_PAGE = 5;
 

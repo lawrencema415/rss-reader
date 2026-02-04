@@ -1,6 +1,5 @@
 import { AlertTriangle } from 'lucide-react';
-
-import Modal from './Modal';
+import Modal from '../Modal';
 
 const ConfirmModal = ({ 
   confirmText = 'Delete', 

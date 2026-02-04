@@ -72,6 +72,7 @@ const Header = ({
               <button 
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center gap-2 pl-2 pr-4 py-1.5 bg-gray-50 border border-gray-200 rounded-full hover:bg-gray-100 transition-colors"
+                aria-label="User menu"
               >
                 {user.user_metadata?.avatar_url ? (
                   <img 

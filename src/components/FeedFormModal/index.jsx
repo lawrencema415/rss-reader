@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Loader2, Plus, Save } from 'lucide-react';
-
-import Modal from './Modal';
+import Modal from '../Modal';
 
 const FeedFormModal = ({ 
   feed = null, 

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Bookmark, Clock, ExternalLink, Facebook, Mail, Share2, Twitter, User } from 'lucide-react';
 
-import { formatFullDate } from '../utils/formatters';
+import { formatFullDate } from '../../utils/formatters';
 
 const StoryDetail = ({ 
   feedName, 

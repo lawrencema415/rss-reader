@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AlertCircle, Bookmark, BookmarkPlus, ChevronLeft, ChevronRight, Clock, ExternalLink, Inbox, Loader2, RefreshCw, User } from 'lucide-react';
 
-import { formatRelativeDate, getPageNumbers, truncateText } from '../utils/formatters';
+import { formatRelativeDate, getPageNumbers, truncateText } from '../../utils/formatters';
 
 const ITEMS_PER_PAGE = 6;
 
