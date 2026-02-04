@@ -12,8 +12,8 @@ describe('FeedFormModal Component', () => {
   it('renders correctly for adding a new feed', () => {
     render(<FeedFormModal {...defaultProps} />);
     expect(screen.getByText('Add New Feed')).toBeInTheDocument();
-    expect(screen.getByLabelText('Source Name')).toBeInTheDocument();
-    expect(screen.getByLabelText('RSS Feed URL')).toBeInTheDocument();
+    expect(screen.getByLabelText(/Source Name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/RSS Feed URL/i)).toBeInTheDocument();
     expect(screen.getByText('Add Feed')).toBeInTheDocument();
   });
 
@@ -29,8 +29,8 @@ describe('FeedFormModal Component', () => {
   it('calls onSave with input values on submit', async () => {
     render(<FeedFormModal {...defaultProps} />);
     
-    fireEvent.change(screen.getByLabelText('Source Name'), { target: { value: 'New Source' } });
-    fireEvent.change(screen.getByLabelText('RSS Feed URL'), { target: { value: 'https://newsource.com/rss' } });
+    fireEvent.change(screen.getByLabelText(/Source Name/i), { target: { value: 'New Source' } });
+    fireEvent.change(screen.getByLabelText(/RSS Feed URL/i), { target: { value: 'https://newsource.com/rss' } });
     
     fireEvent.click(screen.getByText('Add Feed'));
     
@@ -47,8 +47,8 @@ describe('FeedFormModal Component', () => {
     const onSave = vi.fn().mockRejectedValue(new Error('DUPLICATE_URL'));
     render(<FeedFormModal {...defaultProps} onSave={onSave} />);
     
-    fireEvent.change(screen.getByLabelText('Source Name'), { target: { value: 'Duplicate' } });
-    fireEvent.change(screen.getByLabelText('RSS Feed URL'), { target: { value: 'https://duplicate.com/rss' } });
+    fireEvent.change(screen.getByLabelText(/Source Name/i), { target: { value: 'Duplicate' } });
+    fireEvent.change(screen.getByLabelText(/RSS Feed URL/i), { target: { value: 'https://duplicate.com/rss' } });
     
     fireEvent.click(screen.getByText('Add Feed'));
     
@@ -59,13 +59,13 @@ describe('FeedFormModal Component', () => {
     const onSave = vi.fn().mockRejectedValue(new Error('DUPLICATE_URL'));
     render(<FeedFormModal {...defaultProps} onSave={onSave} />);
     
-    fireEvent.change(screen.getByLabelText('Source Name'), { target: { value: 'Duplicate' } });
-    fireEvent.change(screen.getByLabelText('RSS Feed URL'), { target: { value: 'https://duplicate.com/rss' } });
+    fireEvent.change(screen.getByLabelText(/Source Name/i), { target: { value: 'Duplicate' } });
+    fireEvent.change(screen.getByLabelText(/RSS Feed URL/i), { target: { value: 'https://duplicate.com/rss' } });
     fireEvent.click(screen.getByText('Add Feed'));
     
     expect(await screen.findByText('This RSS feed has already been added.')).toBeInTheDocument();
     
-    fireEvent.change(screen.getByLabelText('RSS Feed URL'), { target: { value: 'https://newurl.com/rss' } });
+    fireEvent.change(screen.getByLabelText(/RSS Feed URL/i), { target: { value: 'https://newurl.com/rss' } });
     expect(screen.queryByText('This RSS feed has already been added.')).not.toBeInTheDocument();
   });
 });

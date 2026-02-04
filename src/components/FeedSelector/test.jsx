@@ -47,15 +47,15 @@ describe('FeedSelector Component', () => {
 
   it('shows add button only when user is logged in', () => {
     const { rerender } = render(<FeedSelector {...defaultProps} user={null} />);
-    expect(screen.queryByTitle('Add new feed')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Add new RSS feed')).not.toBeInTheDocument();
 
     rerender(<FeedSelector {...defaultProps} user={{ id: 'user1' }} />);
-    expect(screen.getByTitle('Add new feed')).toBeInTheDocument();
+    expect(screen.getByLabelText('Add new RSS feed')).toBeInTheDocument();
   });
 
   it('calls onAddFeed when add button is clicked', () => {
     render(<FeedSelector {...defaultProps} user={{ id: 'user1' }} />);
-    fireEvent.click(screen.getByTitle('Add new feed'));
+    fireEvent.click(screen.getByLabelText('Add new RSS feed'));
     expect(defaultProps.onAddFeed).toHaveBeenCalled();
   });
 
@@ -65,23 +65,23 @@ describe('FeedSelector Component', () => {
     // Feed 2 is a user feed, so it should have edit/delete buttons (though initially hidden via opacity)
     // Testing library doesn't handle hover states easily for conditional rendering if strictly CSS-based,
     // but the elements are in the DOM.
-    expect(screen.getByTitle('Edit feed')).toBeInTheDocument();
-    expect(screen.getByTitle('Delete feed')).toBeInTheDocument();
+    expect(screen.getByLabelText('Edit Feed 2 feed')).toBeInTheDocument();
+    expect(screen.getByLabelText('Delete Feed 2 feed')).toBeInTheDocument();
   });
 
   it('does not show edit/delete buttons for non-user feeds', () => {
     render(<FeedSelector {...defaultProps} feeds={[mockFeeds[0]]} user={{ id: 'user1' }} />);
-    expect(screen.queryByTitle('Edit feed')).not.toBeInTheDocument();
-    expect(screen.queryByTitle('Delete feed')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Edit.*feed/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Delete.*feed/i)).not.toBeInTheDocument();
   });
 
   it('calls onEditFeed and onDeleteFeed', () => {
     render(<FeedSelector {...defaultProps} user={{ id: 'user1' }} />);
     
-    fireEvent.click(screen.getByTitle('Edit feed'));
+    fireEvent.click(screen.getByLabelText('Edit Feed 2 feed'));
     expect(defaultProps.onEditFeed).toHaveBeenCalledWith(mockFeeds[1]);
 
-    fireEvent.click(screen.getByTitle('Delete feed'));
+    fireEvent.click(screen.getByLabelText('Delete Feed 2 feed'));
     expect(defaultProps.onDeleteFeed).toHaveBeenCalledWith(mockFeeds[1]);
   });
 });
